@@ -32,13 +32,13 @@ def decision_tree_learning(training_dataset, depth):
 
         #get the majority label for the dataset 
 
-        maxlabel = 0
+        maxLabel = 0
         for label in uniqueLabels:
-
             numberofLabels = len(training_dataset[training_dataset[:,-1] == label])
-            if numberofLabels >= maxlabel:
+            if numberofLabels >= maxLabel:
                 maxLabel = numberofLabels
                 majorityClass = label
+                
         node.majorityLabel = majorityClass
 
         #split the dataset based on the column and threshold 
@@ -116,7 +116,7 @@ def information_gain(dataset, leftSubTree, rightSubTree):
 def kFoldSplit(dataset, numberOfFolds):
 
     splits = []
-    # np.random.seed(123)
+    np.random.seed(123)
     np.random.shuffle(dataset)
     allFolds = []
     foldSize = len(dataset) // numberOfFolds
@@ -141,6 +141,8 @@ def pruneCrossValidation(dataset):
     # calculate metrics using test data (i)
     averagePrunedTree = 0
     averageUnPrunedTree = 0
+    PrunedConfusionMatrix=np.zeros((4, 4))
+    UnPrunedConfusionMatrix=np.zeros((4, 4))
     outerFolds = kFoldSplit(dataset, 10)
     for fold in outerFolds:
         bestAcc = 0
@@ -161,10 +163,10 @@ def pruneCrossValidation(dataset):
 
             accuracy, _ = evaluate(validationSet, trainedTree)
             
-            print("Unpruned Accuracy For Inner Tree: ", accuracy)
+            #print("Unpruned Accuracy For Inner Tree: ", accuracy)
 
             accuracytest, _ = evaluate(testData, trainedTree)
-            #averageUnPrunedTree += accuracytest
+
 
             print("Unpruned Accuracy For Inner Tree TESTTTTTT: ", accuracytest)
 
@@ -176,7 +178,6 @@ def pruneCrossValidation(dataset):
             dfsPrune(copiedTrainedTree, copiedTrainedTree, validationSet)
 
             prunedAcc, _ = evaluate(validationSet, copiedTrainedTree)
-
             if(prunedAcc > bestAcc):
                 bestAcc = prunedAcc
                 bestTree = deepcopy(copiedTrainedTree)
@@ -186,16 +187,23 @@ def pruneCrossValidation(dataset):
                 bestUnprunedAcc = accuracy
                 bestUnprunedTree = deepcopy(trainedTree)
             testPruneAccuracy, _ = evaluate(testData, copiedTrainedTree)
+
+
             print("pruned accuracy For Inner Tree: ", prunedAcc)
             print("Pruned Accuracy For Inner TreeTESTTTTT: ", testPruneAccuracy)
             print("Number of nodes in pruned tree: ", totalNodes(copiedTrainedTree))
-        tempAccuracy, _ = evaluate(testData, bestTree)
-        averagePrunedTree += tempAccuracy
 
-        tempAccuracy, _ = evaluate(testData, bestUnprunedTree)
+        tempAccuracy, temp_pruned_ConfusionMatrix = evaluate(testData, bestTree)
+        averagePrunedTree += tempAccuracy
+        PrunedConfusionMatrix+=temp_pruned_ConfusionMatrix
+        
+        tempAccuracy, temp_unpruned_ConfusionMatrix  = evaluate(testData, bestUnprunedTree)
         averageUnPrunedTree += tempAccuracy
+        UnPrunedConfusionMatrix += temp_unpruned_ConfusionMatrix
     print("\n\n\nPruned Average: ", averagePrunedTree / 10)
+    print("\n\n\nPruned confusion matrix:\n", PrunedConfusionMatrix / 10)
     print("\n\n\nUnpruned Average: ", averageUnPrunedTree / 10)
+    print("\n\n\nUnPruned confusion matrix:\n", UnPrunedConfusionMatrix / 10)
 
  
 
@@ -209,17 +217,18 @@ def dfsPrune(root, currentNode, validationSet):
     if currentNode.left.label is not None and currentNode.right.label is not None:
         # determine accuracy without pruning 
         oldAccuracy, _ = evaluate(validationSet, root)
-        nodeL, nodeR, = currentNode.left, currentNode.right
+        nodeL, nodeR, = deepcopy(currentNode.left), deepcopy(currentNode.right)
         #temp prune
         currentNode.left = None
         currentNode.right = None
         currentNode.label = currentNode.majorityLabel
         newAccuracy, _ = evaluate(validationSet, root)
 
-        
+
         if (newAccuracy < oldAccuracy):
-            currentNode.left = nodeL
-            currentNode.right = nodeR
+            #print(newAccuracy,oldAccuracy)
+            currentNode.left = deepcopy(nodeL)
+            currentNode.right = deepcopy(nodeR)
             currentNode.label = None
 
 
@@ -279,9 +288,8 @@ noisyDataset = np.loadtxt("./wifi_db/noisy_dataset.txt")
 cleanDataset = np.loadtxt("./wifi_db/clean_dataset.txt")
 
 #Passing in with the noisy and clean datasets both with initial depths of 0
-# noisyDecisionTree, noisyDepth = decision_tree_learning(noisyDataset, 0)
-cleanDecisionTree, cleanDepth = decision_tree_learning(cleanDataset, 0)
-noisyTree, _ = decision_tree_learning(noisyDataset, 0)
+noisyDecisionTree, noisyDepth = decision_tree_learning(noisyDataset, 0)
+# cleanDecisionTree, cleanDepth = decision_tree_learning(cleanDataset, 0)
 #visualize_tree(noisyTree)
 #visualize_binary_tree(cleanDecisionTree)
 
