@@ -1,122 +1,13 @@
 import numpy as np
 from copy import deepcopy
-
-class Node:
-    #Constructor for the Node Class
-    def __init__(self):
-        self.splitColumn = None
-        self.splitThreshold = None
-        self.left = None
-        self.right = None
-        self.label = None
-        self.majorityLabel = None
-
-#Main recursive function to build the decision tree
-def decision_tree_learning(training_dataset, depth):
-    #if all samples have the same label then 
-    #set datastructure gets only unique labels
-    uniqueLabels = set(training_dataset[:, -1])
-    
-    if len(uniqueLabels) == 1:
-        #if there is only one unique label then all samples have the same label
-        leaf = Node()
-        #setting the leaf's label to that of the current dataset 
-        leaf.label = training_dataset[0,-1]
-        return leaf, depth 
-    else:
-        #gets the split value and column using the find split function
-        split_column, split_value = find_split(training_dataset)
-        node = Node()
-        node.splitColumn = split_column
-        node.splitThreshold = split_value
-
-        #get the majority label for the dataset 
-
-        maxLabel = 0
-        for label in uniqueLabels:
-            numberofLabels = len(training_dataset[training_dataset[:,-1] == label])
-            if numberofLabels >= maxLabel:
-                maxLabel = numberofLabels
-                majorityClass = label
-                
-        node.majorityLabel = majorityClass
-
-        #split the dataset based on the column and threshold 
-        # right dataset is one that meets (column > value) criteria
-        selectedColumn = training_dataset[:, split_column]
-        l_dataset = training_dataset[selectedColumn <= split_value]
-        r_dataset = training_dataset[selectedColumn > split_value]
-        
-        #recursively run decision_tree_learning for both sub-datasets
-        l_branch, l_depth = decision_tree_learning(l_dataset, depth+1)
-        r_branch, r_depth = decision_tree_learning(r_dataset, depth+1)
-        node.left = l_branch
-        node.right = r_branch
-        return (node, max(l_depth, r_depth))
-
-def find_split(dataset):
-    bestIG = 0
-    bestSplitColumn = None
-    bestSplitValue = None
-
-    rows, columns = dataset.shape
-
-    for column in range(columns -1): #-1 to exclude the last column (labels)
-        #sorting the value of the attribute
-        #sorted set of each unique value for a given column
-        sortedValues = sorted(set(dataset[:, column]))
-        for i in range(len(sortedValues) -1): #for every value of a given column
-            #split points that are between two examples in sorted order
-            threshold = (sortedValues[i] + sortedValues[i+1]) /2
-            selectedColumn = dataset[:, column]
-            #temporarily split the dataset based on proposed attribute and threshold to find information gain
-            l_dataset = dataset[selectedColumn <= threshold]
-            r_dataset = dataset[selectedColumn > threshold]
-
-            #Calculate the information gain using the suggested split
-            infoGain = information_gain(dataset, l_dataset, r_dataset)
-
-            #if the temporary split produces the highest information gain 
-            if infoGain > bestIG:
-                bestIG = infoGain
-                bestSplitColumn = column
-                bestSplitValue = threshold
-    #after looping over every attribute and every split point, return them 
-    return bestSplitColumn, bestSplitValue
-
-def entropy(dataset):
-    entropy = 0
-    rows, columns = dataset.shape
-    uniqueLabels = set(dataset[:,-1])
-
-    for label in uniqueLabels:
-        #pk is the number of samples with the label k divided by the total number of samples from the initial dataset
-        pk = len(dataset[dataset[:,-1] == label]) / rows
-        entropy += pk * np.log2(pk)
-    return -entropy
-
-
-def information_gain(dataset, leftSubTree, rightSubTree):
-    #Equation for IG: gain(Sall, Sleft, Sright) = H(Sall) - Remainder(Sleft, Sright)
-    datasetEntropy = entropy(dataset)
-    #get the number of samples in the left and right subtree
-    samplesLeft = len(leftSubTree[:,-1])
-    samplesRight = len(rightSubTree[:,-1])
-    allSamples = samplesLeft + samplesRight
-    leftEntropy = entropy(leftSubTree)
-    rightEntropy = entropy(rightSubTree)
-
-    remainder = ((samplesLeft / allSamples) * leftEntropy) + ((samplesRight / allSamples) * rightEntropy)
-
-    informationGain = datasetEntropy - remainder
-    return informationGain         
-
-
+import matplotlib.pyplot as plt
+import math
+import treebuilder
 
 def kFoldSplit(dataset, numberOfFolds):
 
     splits = []
-    np.random.seed(123)
+    # np.random.seed(123)
     np.random.shuffle(dataset)
     allFolds = []
     foldSize = len(dataset) // numberOfFolds
@@ -141,8 +32,6 @@ def pruneCrossValidation(dataset):
     # calculate metrics using test data (i)
     averagePrunedTree = 0
     averageUnPrunedTree = 0
-    PrunedConfusionMatrix=np.zeros((4, 4))
-    UnPrunedConfusionMatrix=np.zeros((4, 4))
     outerFolds = kFoldSplit(dataset, 10)
     for fold in outerFolds:
         bestAcc = 0
@@ -163,10 +52,10 @@ def pruneCrossValidation(dataset):
 
             accuracy, _ = evaluate(validationSet, trainedTree)
             
-            #print("Unpruned Accuracy For Inner Tree: ", accuracy)
+            print("Unpruned Accuracy For Inner Tree: ", accuracy)
 
             accuracytest, _ = evaluate(testData, trainedTree)
-
+            #averageUnPrunedTree += accuracytest
 
             print("Unpruned Accuracy For Inner Tree TESTTTTTT: ", accuracytest)
 
@@ -178,6 +67,7 @@ def pruneCrossValidation(dataset):
             dfsPrune(copiedTrainedTree, copiedTrainedTree, validationSet)
 
             prunedAcc, _ = evaluate(validationSet, copiedTrainedTree)
+
             if(prunedAcc > bestAcc):
                 bestAcc = prunedAcc
                 bestTree = deepcopy(copiedTrainedTree)
@@ -187,23 +77,16 @@ def pruneCrossValidation(dataset):
                 bestUnprunedAcc = accuracy
                 bestUnprunedTree = deepcopy(trainedTree)
             testPruneAccuracy, _ = evaluate(testData, copiedTrainedTree)
-
-
             print("pruned accuracy For Inner Tree: ", prunedAcc)
             print("Pruned Accuracy For Inner TreeTESTTTTT: ", testPruneAccuracy)
             print("Number of nodes in pruned tree: ", totalNodes(copiedTrainedTree))
-
-        tempAccuracy, temp_pruned_ConfusionMatrix = evaluate(testData, bestTree)
+        tempAccuracy, _ = evaluate(testData, bestTree)
         averagePrunedTree += tempAccuracy
-        PrunedConfusionMatrix+=temp_pruned_ConfusionMatrix
-        
-        tempAccuracy, temp_unpruned_ConfusionMatrix  = evaluate(testData, bestUnprunedTree)
+
+        tempAccuracy, _ = evaluate(testData, bestUnprunedTree)
         averageUnPrunedTree += tempAccuracy
-        UnPrunedConfusionMatrix += temp_unpruned_ConfusionMatrix
     print("\n\n\nPruned Average: ", averagePrunedTree / 10)
-    print("\n\n\nPruned confusion matrix:\n", PrunedConfusionMatrix / 10)
     print("\n\n\nUnpruned Average: ", averageUnPrunedTree / 10)
-    print("\n\n\nUnPruned confusion matrix:\n", UnPrunedConfusionMatrix / 10)
 
  
 
@@ -217,18 +100,17 @@ def dfsPrune(root, currentNode, validationSet):
     if currentNode.left.label is not None and currentNode.right.label is not None:
         # determine accuracy without pruning 
         oldAccuracy, _ = evaluate(validationSet, root)
-        nodeL, nodeR, = deepcopy(currentNode.left), deepcopy(currentNode.right)
+        nodeL, nodeR, = currentNode.left, currentNode.right
         #temp prune
         currentNode.left = None
         currentNode.right = None
         currentNode.label = currentNode.majorityLabel
         newAccuracy, _ = evaluate(validationSet, root)
 
-
+        
         if (newAccuracy < oldAccuracy):
-            #print(newAccuracy,oldAccuracy)
-            currentNode.left = deepcopy(nodeL)
-            currentNode.right = deepcopy(nodeR)
+            currentNode.left = nodeL
+            currentNode.right = nodeR
             currentNode.label = None
 
 
@@ -280,23 +162,64 @@ def parse(row, trained_tree):
         else:
             return parse(row, trained_tree.right)
 
+def visualize_tree(node, x_positions, y_positions):
+    """
+    Function which visualizes the deecision tree
+    
+    """
+    if node is not None:
+        node_text = ""
+        # find if node is leaf or threshold node:
+        if node.label is not None:
+            node_text = str(node.label)
+            plt.text(x_positions[node], -y_positions[node], node_text, ha='center', bbox=dict(boxstyle="square", color = 'g'))
+        else:
+            node_text = f"{node.splitColumn} <= {node.splitThreshold}"
+            plt.text(x_positions[node], -y_positions[node], node_text, ha='center', bbox=dict(boxstyle="square", color = 'y'))
 
+        # plot the contents of node
+        if node.left:
+            # draws line from node to child left node 
+            plt.plot([x_positions[node], x_positions[node.left]], [-y_positions[node], -y_positions[node.left]], 'b-')
+            visualize_tree(node.left, x_positions, y_positions)
+        if node.right:
+            # draws line from parent to child right node 
+            plt.plot([x_positions[node], x_positions[node.right]], [-y_positions[node], -y_positions[node.right]], 'b-')
+            visualize_tree(node.right, x_positions, y_positions)
 
+def get_positions(node, depth, x_position, y_positions, x_positions, spacing=10):
+    if node is not None:
+        y_positions[node] = -depth  # Negative because we want the root at the top
+        x_positions[node] = x_position
 
+        # Recursively assign positions for left and right children
+        get_positions(node.left, depth + 1, x_position - spacing / (depth + 2), y_positions, x_positions)
+        get_positions(node.right, depth + 1, x_position + spacing / (depth + 2), y_positions, x_positions)
+
+# Function to print level order traversal of tree
+ 
 #Step 1: Loading The Data
 noisyDataset = np.loadtxt("./wifi_db/noisy_dataset.txt")
 cleanDataset = np.loadtxt("./wifi_db/clean_dataset.txt")
 
-#Passing in with the noisy and clean datasets both with initial depths of 0
-noisyDecisionTree, noisyDepth = decision_tree_learning(noisyDataset, 0)
-# cleanDecisionTree, cleanDepth = decision_tree_learning(cleanDataset, 0)
-#visualize_tree(noisyTree)
-#visualize_binary_tree(cleanDecisionTree)
+
+tree, depth = decision_tree_learning(cleanDataset, 0)
+noisyTree, _ = decision_tree_learning(noisyDataset, 0)
+
+""" Plotting Functions """
+x_positions = {}
+y_positions = {}
+get_positions(tree, 0, 0, x_positions, y_positions)
+#get_log_positions(tree, 0, x_positions, y_positions)
+fig, ax = plt.subplots()
+visualize_tree(tree, x_positions, y_positions)
+plt.show()
 
 
+""" PRUNING FUNCTIONS """
 # print("Clean Dataset:\n")
 # pruneCrossValidation(cleanDataset)
 
-print("\n\nNoisy Dataset:\n")
-pruneCrossValidation(noisyDataset)
+#print("\n\nNoisy Dataset:\n")
+#pruneCrossValidation(noisyDataset)
 
