@@ -11,8 +11,8 @@ def run_experiments():
     Runs cross_validation experiments and prints results
     
     """
-    clean_acc, clean_cm,unpruned_clean_tree_depth,test1 = evaluation.cross_validation(clean_dataset)
-    noisy_acc, noisy_cm,unpruned_noisy_tree_depth,test2 = evaluation.cross_validation(noisy_dataset)
+    clean_acc, clean_cm,unpruned_clean_tree_depth = evaluation.cross_validation(clean_dataset)
+    noisy_acc, noisy_cm,unpruned_noisy_tree_depth = evaluation.cross_validation(noisy_dataset)
     p_clean_acc, p_clean_cm,clean_tree_depth = evaluation.prune_cross_validation(clean_dataset)
     p_noisy_acc, p_noisy_cm,noisy_tree_depth = evaluation.prune_cross_validation(noisy_dataset)
 
@@ -20,7 +20,6 @@ def run_experiments():
     print("ACCURACY = ", clean_acc)
     print("CONFUSION MATRIX = ", clean_cm)
     print("AVERAGE UNPRUNED PRUNED CLEAN TREE DEPTH=", unpruned_clean_tree_depth)
-    print(test1)
     for i in range(1,5):
         precision = evaluation.getPrecision(clean_cm, i)
         recall = evaluation.getRecall(clean_cm, i)
@@ -41,7 +40,6 @@ def run_experiments():
     print("ACCURACY = ", noisy_acc)
     print("CONFUSION MATRIX = ", noisy_cm)
     print("AVERAGE UNPRUNED PRUNED NOISY TREE DEPTH=", unpruned_noisy_tree_depth)
-    print(test2)
     for i in range(1,5):
         precision = evaluation.getPrecision(noisy_cm, i)
         recall = evaluation.getRecall(noisy_cm, i)

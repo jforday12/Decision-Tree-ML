@@ -126,7 +126,6 @@ def cross_validation(dataset):
     folds = k_fold_split(dataset, 10, SEED)
     avg_accuracy = 0
     average_Unpruned_Tree_depth=0
-    average_Unpruned_Tree_depth2=0
     avg_confusion_matrix = np.zeros((4,4))
     for fold in folds:
         training_fold = fold[0]
@@ -135,10 +134,8 @@ def cross_validation(dataset):
         accuracy, confusion_matrix = evaluate(test_fold, decision_tree)
         avg_accuracy += accuracy
         avg_confusion_matrix += confusion_matrix
-        Unpruned_Tree_depth2=get_tree_depth(decision_tree)
         average_Unpruned_Tree_depth+=Unpruned_Tree_depth
-        average_Unpruned_Tree_depth2+=Unpruned_Tree_depth2
-    return avg_accuracy/10, avg_confusion_matrix/10, average_Unpruned_Tree_depth/10, average_Unpruned_Tree_depth2/10
+    return avg_accuracy/10, avg_confusion_matrix/10, average_Unpruned_Tree_depth/10
 
 def k_fold_split(dataset, k, seed):
     """
@@ -228,7 +225,7 @@ def getF1(recall, precision):
 
 def get_tree_depth(node):
     if node is None:
-        return 0
+        return -1
     else:
         ldepth=get_tree_depth(node.left)
         rdepth=get_tree_depth(node.right)
