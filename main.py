@@ -19,27 +19,39 @@ def run_experiments():
     print("CLEAN DATASET PERFORMANCE: \n NO PRUNING")      
     print("ACCURACY = ", clean_acc)
     print("CONFUSION MATRIX = ", clean_cm)
-    for i in range(5):
-        print("Room ", i, "precision: ", evaluation.getPrecision(clean_cm, i))
-        print("Room ", i, "recall: ", evaluation.getRecall(clean_cm, i))
+    for i in range(1,5):
+        precision = evaluation.getPrecision(clean_cm, i)
+        recall = evaluation.getRecall(clean_cm, i)
+        print("Room ",i," precision: ", precision)
+        print("Room ",i," recall: ", recall)
+        print("Room ",i," F1-Measure", evaluation.getF1(recall, precision))
     print("PRUNING")   
     print("ACCURACY = ", p_clean_acc)
     print("CONFUSION MATRIX = ", p_clean_cm)
-    for i in range(5):
-        print("Room ", i, "precision: ", evaluation.getPrecision(p_clean_cm, i))
-        print("Room ", i, "recall: ", evaluation.getRecall(p_clean_cm, i))
+    for i in range(1,5):
+        precision = evaluation.getPrecision(p_clean_cm, i)
+        recall = evaluation.getRecall(p_clean_cm, i)
+        print("Room ",i," precision: ", precision)
+        print("Room ",i," recall: ", recall)
+        print("Room ",i," F1-Measure", evaluation.getF1(recall, precision))
     print("NOISY DATASET PERFORMANCE: \n NO PRUNING")   
     print("ACCURACY = ", noisy_acc)
     print("CONFUSION MATRIX = ", noisy_cm)
-    for i in range(5):
-        print("Room ", i, " precision: ", evaluation.getPrecision(noisy_cm, i))
-        print("Room ", i, " recall: ", evaluation.getRecall(noisy_cm, i))
+    for i in range(1,5):
+        precision = evaluation.getPrecision(noisy_cm, i)
+        recall = evaluation.getRecall(noisy_cm, i)
+        print("Room ",i," precision: ", precision)
+        print("Room ",i," recall: ", recall)
+        print("Room ",i," F1-Measure", evaluation.getF1(recall, precision))
     print("PRUNING")   
     print("ACCURACY = ", p_noisy_acc)
     print("CONFUSION MATRIX = ", p_noisy_cm)
-    for i in range(5):
-        print("Room ", i, "precision: ", evaluation.getPrecision(p_noisy_cm, i))
-        print("Room ", i, "recall: ", evaluation.getRecall(p_noisy_cm, i))
+    for i in range(1,5):
+        precision = evaluation.getPrecision(p_noisy_cm, i)
+        recall = evaluation.getRecall(p_noisy_cm, i)
+        print("Room ",i," precision: ", precision)
+        print("Room ",i," recall: ", recall)
+        print("Room ",i," F1-Measure", evaluation.getF1(recall, precision))
 
 
 def plot_graph():
@@ -53,7 +65,7 @@ def plot_graph():
     plt.show()
 
 def main():
-    plot_graph()
+    #plot_graph()
     run_experiments()
 
 if __name__ == "__main__":

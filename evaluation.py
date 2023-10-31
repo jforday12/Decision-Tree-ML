@@ -4,6 +4,7 @@ Functions for evaluating a decision tree
 import numpy as np
 import treebuilder
 from copy import deepcopy
+import decimal
 
 SEED = 123
 
@@ -33,7 +34,7 @@ def evaluate(test_dataset, trained_tree):
             confusion_matrix[int(actual_label-1)][int(actual_label-1)] += 1
             correct_predictions += 1
         else:
-            confusion_matrix[int(predicted_label - 1)][int(actual_label - 1)] += 1
+            confusion_matrix[int(actual_label - 1)][int(predicted_label - 1)] += 1
             incorrect_predictions += 1
     # compute accuracy after evaluating test data set
     accuracy = ((correct_predictions) / (correct_predictions + incorrect_predictions)) 
@@ -174,10 +175,11 @@ def getPrecision(confusion_matrix, room):
     """
     TP = confusion_matrix[room-1][room-1]
     FP = 0
-    for i in range(len(confusion_matrix)-1):
-        FP += confusion_matrix[i][room-1]
-
-    precision = TP / (TP + FP)
+    for i in range(len(confusion_matrix)):
+        # So it does not add the true positive to the false positives. 
+        if i!= room - 1:
+            FP += confusion_matrix[i][room-1]
+    precision = decimal.Decimal(TP) / decimal.Decimal(TP + FP)
     return precision
 
 def getRecall(confusion_matrix, room):
@@ -192,10 +194,12 @@ def getRecall(confusion_matrix, room):
     """
     TP = confusion_matrix[room-1][room-1]
     FN = 0
-    for i in range(len(confusion_matrix)-1):
-        FN += confusion_matrix[room-1][i]
+    for i in range(len(confusion_matrix)):
+        # So it does not add the true positive to the false negatives
+        if i != room -1:
+            FN += confusion_matrix[room-1][i]
 
-    recall = TP / (TP + FN)
+    recall = decimal.Decimal(TP) / decimal.Decimal(TP + FN)
     return recall
 
 
@@ -212,5 +216,5 @@ def getF1(recall, precision):
     # So we do not divide by 0
     if precision + recall == 0:
         return 0  
-    f1 = (2 * (precision * recall)) / (precision + recall)
+    f1 = decimal.Decimal((2 * (precision * recall))) / decimal.Decimal(precision + recall)
     return f1
