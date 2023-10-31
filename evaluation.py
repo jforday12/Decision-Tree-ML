@@ -81,6 +81,7 @@ def prune_cross_validation(dataset):
     outer_folds = k_fold_split(dataset, 10, SEED)
     # average accuracy and confusion matrix for best pruned trees
     prune_accuracy = 0
+    tree_depth=0
     prune_cm = np.zeros((4,4))
     for fold in outer_folds:
         best_prune_accuracy = 0
@@ -106,10 +107,11 @@ def prune_cross_validation(dataset):
                 best_pruned_tree = deepcopy(copied_trained_tree)
         # take accuracy and confusion matrix of the best tree 
         accuracy, cm = evaluate(test_set, best_pruned_tree)
+        tree_depth+=get_tree_depth(best_pruned_tree)
         prune_accuracy += accuracy
         prune_cm += cm
 
-    return prune_accuracy/10, prune_cm/10
+    return prune_accuracy/10, prune_cm/10, tree_depth/10
 
 def cross_validation(dataset):
     """
@@ -123,15 +125,20 @@ def cross_validation(dataset):
     """
     folds = k_fold_split(dataset, 10, SEED)
     avg_accuracy = 0
+    average_Unpruned_Tree_depth=0
+    average_Unpruned_Tree_depth2=0
     avg_confusion_matrix = np.zeros((4,4))
     for fold in folds:
         training_fold = fold[0]
         test_fold = fold[1]
-        decision_tree, _ = treebuilder.decision_tree_learning(training_fold)
+        decision_tree, Unpruned_Tree_depth = treebuilder.decision_tree_learning(training_fold)
         accuracy, confusion_matrix = evaluate(test_fold, decision_tree)
         avg_accuracy += accuracy
         avg_confusion_matrix += confusion_matrix
-    return avg_accuracy/10, avg_confusion_matrix/10
+        Unpruned_Tree_depth2=get_tree_depth(decision_tree)
+        average_Unpruned_Tree_depth+=Unpruned_Tree_depth
+        average_Unpruned_Tree_depth2+=Unpruned_Tree_depth2
+    return avg_accuracy/10, avg_confusion_matrix/10, average_Unpruned_Tree_depth/10, average_Unpruned_Tree_depth2/10
 
 def k_fold_split(dataset, k, seed):
     """
@@ -218,3 +225,18 @@ def getF1(recall, precision):
         return 0  
     f1 = decimal.Decimal((2 * (precision * recall))) / decimal.Decimal(precision + recall)
     return f1
+
+def get_tree_depth(node):
+    if node is None:
+        return 0
+    else:
+        ldepth=get_tree_depth(node.left)
+        rdepth=get_tree_depth(node.right)
+    
+        if (ldepth>rdepth):
+            return ldepth+1
+        else:
+            return rdepth+1
+
+    
+    
