@@ -19,15 +19,27 @@ def run_experiments():
     print("CLEAN DATASET PERFORMANCE: \n NO PRUNING")      
     print("ACCURACY = ", clean_acc)
     print("CONFUSION MATRIX = ", clean_cm)
+    for i in range(5):
+        print("Room ", i, "precision: ", evaluation.getPrecision(clean_cm, i))
+        print("Room ", i, "recall: ", evaluation.getRecall(clean_cm, i))
     print("PRUNING")   
     print("ACCURACY = ", p_clean_acc)
-    print("CONFUSION MATRIX = ", p_clean_cm, "\n\n")
+    print("CONFUSION MATRIX = ", p_clean_cm)
+    for i in range(5):
+        print("Room ", i, "precision: ", evaluation.getPrecision(p_clean_cm, i))
+        print("Room ", i, "recall: ", evaluation.getRecall(p_clean_cm, i))
     print("NOISY DATASET PERFORMANCE: \n NO PRUNING")   
     print("ACCURACY = ", noisy_acc)
     print("CONFUSION MATRIX = ", noisy_cm)
+    for i in range(5):
+        print("Room ", i, " precision: ", evaluation.getPrecision(noisy_cm, i))
+        print("Room ", i, " recall: ", evaluation.getRecall(noisy_cm, i))
     print("PRUNING")   
     print("ACCURACY = ", p_noisy_acc)
-    print("CONFUSION MATRIX = ", p_noisy_cm, "\n\n")
+    print("CONFUSION MATRIX = ", p_noisy_cm)
+    for i in range(5):
+        print("Room ", i, "precision: ", evaluation.getPrecision(p_noisy_cm, i))
+        print("Room ", i, "recall: ", evaluation.getRecall(p_noisy_cm, i))
 
 
 def plot_graph():

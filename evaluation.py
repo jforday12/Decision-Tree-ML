@@ -161,3 +161,56 @@ def k_fold_split(dataset, k, seed):
         k_folds.append([training_fold, test_fold])
     
     return k_folds
+
+def getPrecision(confusion_matrix, room):
+    """
+    Calculates the precision rate from the confusion matrix for a given class.  
+
+    Arguments:
+        confusion_martix -- The confusion matrix created from our algorithm
+        room -- The class for which precision is to be calculated
+    Returns:
+        precision --  The precision of the algorithm with respect to a class.
+    """
+    TP = confusion_matrix[room-1][room-1]
+    FP = 0
+    for i in range(len(confusion_matrix)-1):
+        FP += confusion_matrix[i][room-1]
+
+    precision = TP / (TP + FP)
+    return precision
+
+def getRecall(confusion_matrix, room):
+    """
+    Calculates the recall rate from the confusion matrix for a given class.  
+
+    Arguments:
+        confusion_martix -- The confusion matrix created from our algorithm
+        room -- The class for which recall is to be calculated
+    Returns:
+        recall --  The recall of the algorithm with respect to a class.
+    """
+    TP = confusion_matrix[room-1][room-1]
+    FN = 0
+    for i in range(len(confusion_matrix)-1):
+        FN += confusion_matrix[room-1][i]
+
+    recall = TP / (TP + FN)
+    return recall
+
+
+def getF1(recall, precision):
+    """
+    Calculates the F1-measure derived from the recall and precision rates.
+
+    Arguments:
+        recall -- The recall rate.
+        precision -- The precision rate
+    Returns:
+        f1 --  The F1-measure. 
+    """
+    # So we do not divide by 0
+    if precision + recall == 0:
+        return 0  
+    f1 = (2 * (precision * recall)) / (precision + recall)
+    return f1
