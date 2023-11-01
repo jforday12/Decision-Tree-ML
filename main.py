@@ -49,7 +49,7 @@ def run_experiments():
     print("PRUNING")   
     print("ACCURACY = ", p_noisy_acc)
     print("CONFUSION MATRIX = ", p_noisy_cm)
-    print("AVERAGE NOISY CLEAN TREE DEPTH=", noisy_tree_depth)
+    print("AVERAGE NOISY PRUNED TREE DEPTH=", noisy_tree_depth)
     for i in range(1,5):
         precision = evaluation.getPrecision(p_noisy_cm, i)
         recall = evaluation.getRecall(p_noisy_cm, i)
