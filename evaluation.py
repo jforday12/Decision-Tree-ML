@@ -241,7 +241,7 @@ def getF1(recall, precision):
 
 def get_tree_depth(node):
     if node is None:
-        return 0
+        return -1
     else:
         ldepth=get_tree_depth(node.left)
         rdepth=get_tree_depth(node.right)
