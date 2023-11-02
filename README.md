@@ -1,7 +1,7 @@
 # Running the code:
 
 Following file structure is expected:
------
+
 ./DecisionTrees
   -main.py
   -evaluation.py
@@ -9,7 +9,7 @@ Following file structure is expected:
   -/wifi_db
     -clean_dataset.txt
     -noisy_dataset.txt
------
+
 
 Running main.py will run the cross validation without and with pruning for both datasets and print all the results (confusion matrix, accuracy, F1 etc..) 
 
