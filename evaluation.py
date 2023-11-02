@@ -6,8 +6,6 @@ import treebuilder
 from copy import deepcopy
 import decimal
 
-SEED = 123
-
 def evaluate(test_dataset, trained_tree):
     """
     Evaluates decision tree using an unseen test dataset  
@@ -62,7 +60,7 @@ def inference(data, trained_tree):
         else:
             return inference(data, trained_tree.right)
         
-def prune_cross_validation(dataset):
+def prune_cross_validation(dataset, seed):
     """
     Performs cross validation within cross validation across 
     10 fold splits using pruning to trim the decision tree to
@@ -78,7 +76,7 @@ def prune_cross_validation(dataset):
 
     """
     # calculate metrics using test data (i)
-    outer_folds = k_fold_split(dataset, 10, SEED)
+    outer_folds = k_fold_split(dataset, 10, seed)
     # average accuracy and confusion matrix for best pruned trees
     prune_accuracy = 0
     tree_depth=0
@@ -86,7 +84,7 @@ def prune_cross_validation(dataset):
     for fold in outer_folds:
         best_prune_accuracy = 0
         test_set = fold[1]
-        inner_folds = k_fold_split(fold[0], 9, SEED)
+        inner_folds = k_fold_split(fold[0], 9, seed)
         for inner_fold in inner_folds:
             # take the test set of inner fold as validation set
             validation_set = inner_fold[1]
@@ -113,7 +111,7 @@ def prune_cross_validation(dataset):
 
     return prune_accuracy/10, prune_cm/10, tree_depth/10
 
-def cross_validation(dataset):
+def cross_validation(dataset, seed):
     """
     Performs cross validation on decision tree 
     
@@ -121,24 +119,27 @@ def cross_validation(dataset):
         dataset -- dataset to use
     Returns:
         accuracy -- average accuracy
-        confustion_matrix -- average confusion matrix 
+        confustion_matrix -- average confusion matri
+        avg_depth -- the average depth of the trees generated
     """
-    folds = k_fold_split(dataset, 10, SEED)
+    # create 10 folds of (testing, training) from dataset
+    folds = k_fold_split(dataset, 10, seed)
+    # average accuracy, depth and cm to be computed over the 10 folds
     avg_accuracy = 0
-    average_Unpruned_Tree_depth=0
-    average_Unpruned_Tree_depth2=0
+    avg_depth=0
     avg_confusion_matrix = np.zeros((4,4))
     for fold in folds:
         training_fold = fold[0]
         test_fold = fold[1]
-        decision_tree, Unpruned_Tree_depth = treebuilder.decision_tree_learning(training_fold)
+        # compute decision tree with training fold
+        decision_tree, depth = treebuilder.decision_tree_learning(training_fold)
+        # evaluate decision tree using the testing data
         accuracy, confusion_matrix = evaluate(test_fold, decision_tree)
+        # update accuracy, confusion matrix and depth
         avg_accuracy += accuracy
         avg_confusion_matrix += confusion_matrix
-        Unpruned_Tree_depth2=get_tree_depth(decision_tree)
-        average_Unpruned_Tree_depth+=Unpruned_Tree_depth
-        average_Unpruned_Tree_depth2+=Unpruned_Tree_depth2
-    return avg_accuracy/10, avg_confusion_matrix/10, average_Unpruned_Tree_depth/10, average_Unpruned_Tree_depth2/10
+        avg_depth+=depth
+    return avg_accuracy/10, avg_confusion_matrix/10, avg_depth/10
 
 def k_fold_split(dataset, k, seed):
     """
@@ -170,49 +171,61 @@ def k_fold_split(dataset, k, seed):
     
     return k_folds
 
-def getPrecision(confusion_matrix, room):
+def get_precision(confusion_matrix, label):
     """
     Calculates the precision rate from the confusion matrix for a given class.  
 
     Arguments:
         confusion_martix -- The confusion matrix created from our algorithm
-        room -- The class for which precision is to be calculated
+        label -- The class for which precision is to be calculated
     Returns:
         precision --  The precision of the algorithm with respect to a class.
     """
-    TP = confusion_matrix[room-1][room-1]
-    FP = 0
+    tp = confusion_matrix[label-1][label-1]
+    fp = 0
     for i in range(len(confusion_matrix)):
         # So it does not add the true positive to the false positives. 
-        if i!= room - 1:
-            FP += confusion_matrix[i][room-1]
-    precision = decimal.Decimal(TP) / decimal.Decimal(TP + FP)
+        if i != label - 1:
+            fp += confusion_matrix[i][label-1]
+    precision = decimal.Decimal(tp) / decimal.Decimal(tp + fp)
     return precision
 
-def getRecall(confusion_matrix, room):
+def get_recall(confusion_matrix, label):
     """
     Calculates the recall rate from the confusion matrix for a given class.  
 
     Arguments:
         confusion_martix -- The confusion matrix created from our algorithm
-        room -- The class for which recall is to be calculated
+        label -- The class for which recall is to be calculated
     Returns:
         recall --  The recall of the algorithm with respect to a class.
     """
-    TP = confusion_matrix[room-1][room-1]
-    FN = 0
+    tp = confusion_matrix[label-1][label-1]
+    fn = 0
     for i in range(len(confusion_matrix)):
         # So it does not add the true positive to the false negatives
-        if i != room -1:
-            FN += confusion_matrix[room-1][i]
-
-    recall = decimal.Decimal(TP) / decimal.Decimal(TP + FN)
+        if i != label -1:
+            fn += confusion_matrix[label-1][i]
+    recall = decimal.Decimal(tp) / decimal.Decimal(tp + fn)
     return recall
 
+def print_metrics(confusion_matrix):
+    """
+    Calculate and print precision, recall and accuraccy for 
+    each label for a given label (room) 
+    """
+    for i in range(1, 5):
+        print("room ", i, "metrics: ")
+        precision = get_precision(confusion_matrix, i)
+        recall = get_recall(confusion_matrix, i)
+        print("precision: ", precision)
+        print("recall: ", recall)
+        print("F1", getF1(recall, precision))
+        print("\n")
 
 def getF1(recall, precision):
     """
-    Calculates the F1-measure derived from the recall and precision rates.
+    Calculates the f1-measure derived from the recall and precision rates.
 
     Arguments:
         recall -- The recall rate.

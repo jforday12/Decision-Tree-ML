@@ -6,59 +6,53 @@ import matplotlib.pyplot as plt
 noisy_dataset = np.loadtxt("./wifi_db/noisy_dataset.txt")
 clean_dataset = np.loadtxt("./wifi_db/clean_dataset.txt")
 
-def run_experiments():
+# seed for custom experiments
+SEED = 2525
+
+def run_experiments(seed=123):
     """
-    Runs cross_validation experiments and prints results
+    Runs all experiments and prints results 
+
+    Arguments:
+        seed -- seed for shuffling dataset 
+    """
+    print("Cross validation with no pruning experiments: \n\n")
+    no_pruning_experiments(seed)
+    print("-"*30,"\n")
+    print("Cross validation within cross-validation pruning experiments:\n\n")
+    pruning_experiments(seed)
+
+def no_pruning_experiments(seed):
+    """
+    Runs cross validation experiments with no pruning
     
+    Arguments:
+        seed -- seed for shuffling dataset 
     """
-    clean_acc, clean_cm,unpruned_clean_tree_depth,test1 = evaluation.cross_validation(clean_dataset)
-    noisy_acc, noisy_cm,unpruned_noisy_tree_depth,test2 = evaluation.cross_validation(noisy_dataset)
-    p_clean_acc, p_clean_cm,clean_tree_depth = evaluation.prune_cross_validation(clean_dataset)
-    p_noisy_acc, p_noisy_cm,noisy_tree_depth = evaluation.prune_cross_validation(noisy_dataset)
+    print("generating tree for clean dataset....")
+    clean_acc, clean_cm, clean_depth = evaluation.cross_validation(clean_dataset, seed)
+    print("avg depth = ", clean_depth, "\naccuracy = ", clean_acc, "\nconfusion matrix:\n", clean_cm,'\n')
+    evaluation.print_metrics(clean_cm)
+    print("generating tree for noisy dataset....")
+    noisy_acc, noisy_cm, noisy_depth = evaluation.cross_validation(noisy_dataset, seed)
+    print("avg depth = ", noisy_depth, "\naccuracy = ", noisy_acc, "\nconfusion matrix:\n", noisy_cm,'\n')
+    evaluation.print_metrics(noisy_cm)
 
-    print("CLEAN DATASET PERFORMANCE: \n NO PRUNING")      
-    print("ACCURACY = ", clean_acc)
-    print("CONFUSION MATRIX = ", clean_cm)
-    print("AVERAGE UNPRUNED PRUNED CLEAN TREE DEPTH=", unpruned_clean_tree_depth)
-    print(test1)
-    for i in range(1,5):
-        precision = evaluation.getPrecision(clean_cm, i)
-        recall = evaluation.getRecall(clean_cm, i)
-        print("Room ",i," precision: ", precision)
-        print("Room ",i," recall: ", recall)
-        print("Room ",i," F1-Measure", evaluation.getF1(recall, precision))
-    print("PRUNING")   
-    print("ACCURACY = ", p_clean_acc)
-    print("CONFUSION MATRIX = ", p_clean_cm)
-    print("AVERAGE PRUNED CLEAN TREE DEPTH=", clean_tree_depth)
-    for i in range(1,5):
-        precision = evaluation.getPrecision(p_clean_cm, i)
-        recall = evaluation.getRecall(p_clean_cm, i)
-        print("Room ",i," precision: ", precision)
-        print("Room ",i," recall: ", recall)
-        print("Room ",i," F1-Measure", evaluation.getF1(recall, precision))
-    print("NOISY DATASET PERFORMANCE: \n NO PRUNING")   
-    print("ACCURACY = ", noisy_acc)
-    print("CONFUSION MATRIX = ", noisy_cm)
-    print("AVERAGE UNPRUNED PRUNED NOISY TREE DEPTH=", unpruned_noisy_tree_depth)
-    print(test2)
-    for i in range(1,5):
-        precision = evaluation.getPrecision(noisy_cm, i)
-        recall = evaluation.getRecall(noisy_cm, i)
-        print("Room ",i," precision: ", precision)
-        print("Room ",i," recall: ", recall)
-        print("Room ",i," F1-Measure", evaluation.getF1(recall, precision))
-    print("PRUNING")   
-    print("ACCURACY = ", p_noisy_acc)
-    print("CONFUSION MATRIX = ", p_noisy_cm)
-    print("AVERAGE NOISY CLEAN TREE DEPTH=", noisy_tree_depth)
-    for i in range(1,5):
-        precision = evaluation.getPrecision(p_noisy_cm, i)
-        recall = evaluation.getRecall(p_noisy_cm, i)
-        print("Room ",i," precision: ", precision)
-        print("Room ",i," recall: ", recall)
-        print("Room ",i," F1-Measure", evaluation.getF1(recall, precision))
-
+def pruning_experiments(seed):
+    """
+    Runs cross validation experiments with no pruning
+    
+    Arguments:
+        seed -- seed for shuffling dataset 
+    """
+    print("generating tree for clean dataset....")
+    clean_acc, clean_cm, clean_depth = evaluation.prune_cross_validation(clean_dataset, seed)
+    print("avg depth = ", clean_depth, "\naccuracy = ", clean_acc, "\nconfusion matrix:\n", clean_cm,'\n')
+    evaluation.print_metrics(clean_cm)
+    print("generating tree for noisy dataset....")
+    noisy_acc, noisy_cm, noisy_depth = evaluation.prune_cross_validation(noisy_dataset, seed)
+    print("avg depth = ", noisy_depth, "\naccuracy = ", noisy_acc, "\nconfusion matrix:\n", noisy_cm,'\n')
+    evaluation.print_metrics(noisy_cm)
 
 def plot_graph():
     root, _ = treebuilder.decision_tree_learning(clean_dataset)
@@ -70,9 +64,44 @@ def plot_graph():
     treebuilder.draw_tree(root, ax)
     plt.show()
 
+def custom_cross_validation(seed, raw_dataset):
+    """
+    Runs cross validation for a custom dataset 
+
+    args: 
+        seed: shuffling dataset pre k-fold split
+        raw_dataset: txt file based dataset
+
+    """
+    print("generating tree for custom dataset....")
+    acc, cm, depth = evaluation.cross_validation(raw_dataset, seed)
+    print("avg depth = ", depth, "\naccuracy = ", acc, "\nconfusion matrix:\n", cm,'/n')
+    evaluation.print_metrics(cm)
+
+def custom_prune_cross_validation(seed, raw_dataset):
+    """
+    Runs pruned cross validation for a custom dataset 
+
+    args: 
+        seed: shuffling dataset pre k-fold split
+        raw_dataset: txt file based dataset
+    """
+    print("generating tree for custom dataset....")
+    acc, cm, depth = evaluation.prune_cross_validation(raw_dataset, seed)
+    print("accuracy = ", acc, "\nconfusion matrix:\n", cm, "\navg depth = ", depth)
+    evaluation.print_metrics(cm)
+
+
 def main():
-    #plot_graph()
-    run_experiments()
+    """
+    Runs predesined experiments, can uncomment custom experiments to run
+    on unseen dataset 'raw_dataset'
+    
+    """
+    run_experiments(SEED)
+
+    #custom_cross_validation(SEED, raw_dataset=)
+    #custom_prune_cross_validation(SEED, raw_dataset=)
 
 if __name__ == "__main__":
     main()
