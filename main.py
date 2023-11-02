@@ -54,17 +54,7 @@ def pruning_experiments(seed):
     print("avg depth = ", noisy_depth, "\naccuracy = ", noisy_acc, "\nconfusion matrix:\n", noisy_cm,'\n')
     evaluation.print_metrics(noisy_cm)
 
-def plot_graph():
-    root, _ = treebuilder.decision_tree_learning(clean_dataset)
-    treebuilder.calculate_node_xy(root)
-    fig, ax = plt.subplots()
-    ax.set_aspect('equal', 'box')
-    ax.set_xlim(auto=True)
-    ax.set_ylim(auto=True)
-    treebuilder.draw_tree(root, ax)
-    plt.show()
-
-def custom_cross_validation(seed, raw_dataset):
+def custom_cross_validation(raw_dataset, seed):
     """
     Runs cross validation for a custom dataset 
 
@@ -78,7 +68,7 @@ def custom_cross_validation(seed, raw_dataset):
     print("avg depth = ", depth, "\naccuracy = ", acc, "\nconfusion matrix:\n", cm,'/n')
     evaluation.print_metrics(cm)
 
-def custom_prune_cross_validation(seed, raw_dataset):
+def custom_prune_cross_validation(raw_dataset, seed):
     """
     Runs pruned cross validation for a custom dataset 
 
@@ -91,6 +81,15 @@ def custom_prune_cross_validation(seed, raw_dataset):
     print("accuracy = ", acc, "\nconfusion matrix:\n", cm, "\navg depth = ", depth)
     evaluation.print_metrics(cm)
 
+def plot_graph():
+    root, _ = treebuilder.decision_tree_learning(clean_dataset)
+    plt.figure(figsize=(50, 8))
+    max_h_spacing = 35.0  # Adjust the maximum horizontal spacing as needed
+    treebuilder.plot_decision_tree(root, x_center=0, y=0, node_gap=max_h_spacing)
+
+    plt.axis('off')
+    plt.show()
+
 
 def main():
     """
@@ -99,9 +98,9 @@ def main():
     
     """
     run_experiments(SEED)
-
-    #custom_cross_validation(SEED, raw_dataset=)
-    #custom_prune_cross_validation(SEED, raw_dataset=)
+    plot_graph()
+    #custom_cross_validation(raw_dataset, seed)
+    #custom_prune_cross_validation(raw_dataset, seed)
 
 if __name__ == "__main__":
     main()

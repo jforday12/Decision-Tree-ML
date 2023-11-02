@@ -4,7 +4,7 @@ visualizing a classification decision tree
 """
 import numpy as np
 import evaluation
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 class Node:
     """
@@ -22,7 +22,6 @@ class Node:
         self.majority_label = None # majority class at node
         self.x_pos = None # x coordinate for plotting node
         self.y_pos = None # y coordinate for plotting node 
-        self.mod = 0 # property for shifting node's children
 def decision_tree_learning(training_dataset, depth=0):
     """
     Recursive function to build the decision tree
@@ -287,4 +286,41 @@ def calculate_final_x(node, modsum=0):
     modsum += node.mod
     calculate_final_x(node.left, modsum)
     calculate_final_x(node.right, modsum)
+
+
+def plot_decision_tree(tree, x_center, y, node_gap, depth=0):
+    """
+    Calculates positions and plots the tree
     
+    Arguments:
+        tree -- tree to plot
+        x_center --  center x point for root node
+        y -- y point (depth) to plot each node
+        node_gap -- space between child nodes  
+    
+    """
+    if tree is not None:
+        # plots either a split or label 
+        if tree.split_feature is not None:
+            plt.text(x_center, y, f'[X{tree.split_feature} < {tree.split_threshold}]', fontsize=1, 
+                     ha='center', va='center', bbox=dict(facecolor='wheat', edgecolor='blue', boxstyle='round'))
+        if tree.label is not None:
+            plt.text(x_center, y, f'Label: {tree.label}', fontsize=1, ha='center', va='center',
+                     bbox=dict(facecolor='wheat', edgecolor='green', boxstyle='round'))
+        # recursively work left down tree
+        new_y = y - 1
+        if tree.left is not None:
+            # calculate new gap based on depth of tree
+            new_node_gap = 2*node_gap / ((2 ** depth))
+            # calculate new x centre for next node 
+            new_x_center = x_center - new_node_gap 
+            # next y depth
+            # draw line between old x centre and new x centre 
+            plt.plot([x_center, new_x_center], [y, new_y], linewidth=1, color='k')
+            plot_decision_tree(tree.left, new_x_center, new_y, node_gap, depth + 1)
+        # recursively works right down the tree
+        if tree.right is not None:
+            new_node_gap = 2*node_gap / ((2 ** depth) )
+            new_x_center = x_center + new_node_gap 
+            plt.plot([x_center, new_x_center], [y, new_y], linewidth=1, color='k')
+            plot_decision_tree(tree.right, new_x_center, new_y, node_gap, depth + 1)
