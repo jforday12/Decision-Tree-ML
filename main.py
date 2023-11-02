@@ -18,7 +18,7 @@ def run_experiments():
 
     print("CLEAN DATASET PERFORMANCE: \n NO PRUNING")      
     print("ACCURACY = ", clean_acc)
-    print("CONFUSION MATRIX = ", clean_cm)
+    print("CONFUSION MATRIX = \n", clean_cm)
     for i in range(1,5):
         precision = evaluation.getPrecision(clean_cm, i)
         recall = evaluation.getRecall(clean_cm, i)
@@ -27,7 +27,7 @@ def run_experiments():
         print("Room ",i," F1-Measure", evaluation.getF1(recall, precision))
     print("PRUNING")   
     print("ACCURACY = ", p_clean_acc)
-    print("CONFUSION MATRIX = ", p_clean_cm)
+    print("CONFUSION MATRIX = \n", p_clean_cm)
     for i in range(1,5):
         precision = evaluation.getPrecision(p_clean_cm, i)
         recall = evaluation.getRecall(p_clean_cm, i)
@@ -36,7 +36,7 @@ def run_experiments():
         print("Room ",i," F1-Measure", evaluation.getF1(recall, precision))
     print("NOISY DATASET PERFORMANCE: \n NO PRUNING")   
     print("ACCURACY = ", noisy_acc)
-    print("CONFUSION MATRIX = ", noisy_cm)
+    print("CONFUSION MATRIX = \n", noisy_cm)
     for i in range(1,5):
         precision = evaluation.getPrecision(noisy_cm, i)
         recall = evaluation.getRecall(noisy_cm, i)
@@ -45,7 +45,7 @@ def run_experiments():
         print("Room ",i," F1-Measure", evaluation.getF1(recall, precision))
     print("PRUNING")   
     print("ACCURACY = ", p_noisy_acc)
-    print("CONFUSION MATRIX = ", p_noisy_cm)
+    print("CONFUSION MATRIX = \n", p_noisy_cm)
     for i in range(1,5):
         precision = evaluation.getPrecision(p_noisy_cm, i)
         recall = evaluation.getRecall(p_noisy_cm, i)
@@ -56,17 +56,17 @@ def run_experiments():
 
 def plot_graph():
     root, _ = treebuilder.decision_tree_learning(clean_dataset)
-    treebuilder.calculate_node_xy(root)
-    fig, ax = plt.subplots()
-    ax.set_aspect('equal', 'box')
-    ax.set_xlim(auto=True)
-    ax.set_ylim(auto=True)
-    treebuilder.draw_tree(root, ax)
+    plt.figure(figsize=(30, 20))
+    max_h_spacing = 20.0  # Adjust the maximum horizontal spacing as needed
+    treebuilder.plot_decision_tree(root, x_center=0.5, y=1.0, max_h_spacing=max_h_spacing)
+
+    plt.axis('off')
     plt.show()
 
 def main():
-    #plot_graph()
     run_experiments()
+    plot_graph()
+    
 
 if __name__ == "__main__":
     main()

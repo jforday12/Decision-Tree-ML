@@ -5,6 +5,7 @@ visualizing a classification decision tree
 import numpy as np
 import evaluation
 import matplotlib as plt
+import matplotlib.pyplot as plt
 
 class Node:
     """
@@ -200,91 +201,23 @@ def dfs_prune(root, current_node, validation_set):
             current_node.right = right_save
             current_node.label = None
 
-"""
-Functions for tree plotting, based on:
-
-https://rachel53461.wordpress.com/2014/04/20/algorithm-for-drawing-trees/
-"""
-
-
-def draw_tree(node, plot):
-    if not node:
-        return
-    if node.left:
-        plot.plot([node.x_pos*10, node.left.x_pos*10], [-node.y_pos*2, -node.left.y_pos*2], 'k-')  # Draw line to left child
-        draw_tree(node.left, plot)
-    if node.right:
-        plot.plot([node.x_pos*10, node.right.x_pos*10], [-node.y_pos*2, -node.right.y_pos*2], 'k-')  # Draw line to right child
-        draw_tree(node.right, plot)
-    # if node is leaf 
-    if (node.label is not None):
-        text = str(node.label)
-    # node is threshold
-    else:
-        text = f"{node.split_feature} <= {node.split_threshold}"
-    plot.text(node.x_pos*10, -node.y_pos*2, text, ha='center', va='center', bbox=dict(facecolor='white', edgecolor='black'))
-
-
-def calculate_node_xy(root):
-    calculate_inital_x(root)
-    check_and_resolve_conflict(root.right, [root.left], 1)
-    calculate_final_x(root)
-
-def calculate_inital_x(node, depth=0, left_most=False):
-    if node is None:
-        return
-    calculate_inital_x(node.left, depth+1, left_most=True)
-    calculate_inital_x(node.right, depth+1)
-    if left_most:
-        node.x_pos = 0
-    else:
-        node.x_pos = 1
-    node.y_pos = depth
-    if(node.left is not None and node.right is not None):
-        if left_most:
-            node.x_pos = (node.left.x_pos + node.right.x_pos)/2
-        else:
-            node.x_mod = node.x_pos - (node.left.x_pos + node.right.x_pos)/2
-
-def get_right_contour(node, depth, contour):
-    if not node:
-        return
-    if depth not in contour:
-        contour[depth] = node.x_pos
-    else:
-        contour[depth] = max(contour[depth], node.x_pos)
-    get_right_contour(node.left, depth+1, contour)
-    get_right_contour(node.right, depth+1, contour)
-
-def get_left_contour(node, depth, contour):
-    if not node:
-        return
-    if depth not in contour:
-        contour[depth] = node.x_pos
-    else:
-        contour[depth] = min(contour[depth], node.x_pos)
-    get_left_contour(node.left, depth+1, contour)
-    get_left_contour(node.right, depth+1, contour)
-
-def check_and_resolve_conflict(node, siblings, level):
-    if not node or not siblings:
-        return
-    left_contour = {}
-    get_left_contour(node, level, left_contour)
-    shift = 0
-    for sibling in siblings:
-        right_contour = {}
-        get_right_contour(sibling, level, right_contour)
-        for y in left_contour:
-            if (y in right_contour and left_contour[y] <= right_contour[y]):
-                shift = max(shift, right_contour[y] - left_contour[y] + 1)
-    node.x_pos += shift
-
-def calculate_final_x(node, modsum=0):
-    if node is None:
-        return
-    node.x_pos += modsum
-    modsum += node.mod
-    calculate_final_x(node.left, modsum)
-    calculate_final_x(node.right, modsum)
-    
+def plot_decision_tree(tree, x_center, y, max_h_spacing, depth=0):
+    text_gap = 0.1  # Small gap above and below the text
+    line_gap = 0.1   # Gap between the lines connecting the nodes
+    if tree is not None:
+        if tree.split_feature is not None:
+            plt.text(x_center, y - text_gap, f'[X{tree.split_feature} < {tree.split_threshold}]', fontsize=5, ha='center', va='center')
+        if tree.label is not None:
+            plt.text(x_center, y - text_gap, f'Label: {tree.label}', fontsize=5, ha='center', va='center')
+        if tree.left is not None:
+            h_spacing = max_h_spacing / (2 ** depth) if depth < 6 else max_h_spacing / (2 ** 4)
+            x_left = x_center - h_spacing
+            y_next = y - 1 - line_gap
+            plt.plot([x_center, x_left], [y - text_gap, y_next], linewidth=2, color='b')
+            plot_decision_tree(tree.left, x_left, y_next, max_h_spacing, depth + 1)
+        if tree.right is not None:
+            h_spacing = max_h_spacing / (2 ** depth) if depth < 6 else max_h_spacing / (2 ** 4)
+            x_right = x_center + h_spacing
+            y_next = y - 1 - line_gap
+            plt.plot([x_center, x_right], [y - text_gap, y_next], linewidth=2, color='b')
+            plot_decision_tree(tree.right, x_right, y_next, max_h_spacing, depth + 1)
