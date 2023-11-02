@@ -82,10 +82,12 @@ def custom_prune_cross_validation(raw_dataset, seed):
     evaluation.print_metrics(cm)
 
 def plot_graph():
+    """
+    Generates a plot for the decision tree built on the clean_dataset     
+    """
     root, _ = treebuilder.decision_tree_learning(clean_dataset)
     plt.figure(figsize=(50, 8))
-    max_h_spacing = 35.0  # Adjust the maximum horizontal spacing as needed
-    treebuilder.plot_decision_tree(root, x_center=0, y=0, node_gap=max_h_spacing)
+    treebuilder.plot_decision_tree(root, x_center=0, y=0, node_gap=35)
 
     plt.axis('off')
     plt.show()
