@@ -202,22 +202,29 @@ def dfs_prune(root, current_node, validation_set):
             current_node.label = None
 
 def plot_decision_tree(tree, x_center, y, max_h_spacing, depth=0):
-    text_gap = 0.1  # Small gap above and below the text
-    line_gap = 0.1   # Gap between the lines connecting the nodes
+    text_gap = 0.01  # Small gap above and below the text
+    line_gap = 0.01   # Gap between the lines connecting the nodes
+
     if tree is not None:
         if tree.split_feature is not None:
-            plt.text(x_center, y - text_gap, f'[X{tree.split_feature} < {tree.split_threshold}]', fontsize=5, ha='center', va='center')
+            plt.text(x_center, y - text_gap, f'[X{tree.split_feature} < {tree.split_threshold}]', fontsize=3, ha='center', va='center')
         if tree.label is not None:
-            plt.text(x_center, y - text_gap, f'Label: {tree.label}', fontsize=5, ha='center', va='center')
+            plt.text(x_center, y - text_gap, f'Label: {tree.label}', fontsize=3, ha='center', va='center')
         if tree.left is not None:
-            h_spacing = max_h_spacing / (2 ** depth) if depth < 6 else max_h_spacing / (2 ** 4)
+            h_spacing = 2* max_h_spacing / ((2 ** depth) )
+            if depth < 2: 
+                h_spacing += 20
             x_left = x_center - h_spacing
+           
+                
             y_next = y - 1 - line_gap
-            plt.plot([x_center, x_left], [y - text_gap, y_next], linewidth=2, color='b')
+            plt.plot([x_center, x_left], [y - text_gap, y_next], linewidth=1, color='b')
             plot_decision_tree(tree.left, x_left, y_next, max_h_spacing, depth + 1)
         if tree.right is not None:
-            h_spacing = max_h_spacing / (2 ** depth) if depth < 6 else max_h_spacing / (2 ** 4)
-            x_right = x_center + h_spacing
+            h_spacing = 2*  max_h_spacing / ((2 ** depth) )
+            if depth < 2: 
+                h_spacing += 20
+            x_right = x_center + h_spacing 
             y_next = y - 1 - line_gap
-            plt.plot([x_center, x_right], [y - text_gap, y_next], linewidth=2, color='b')
+            plt.plot([x_center, x_right], [y - text_gap, y_next], linewidth=1, color='b')
             plot_decision_tree(tree.right, x_right, y_next, max_h_spacing, depth + 1)

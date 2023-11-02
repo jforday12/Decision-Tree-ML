@@ -56,16 +56,17 @@ def run_experiments():
 
 def plot_graph():
     root, _ = treebuilder.decision_tree_learning(clean_dataset)
-    plt.figure(figsize=(30, 20))
-    max_h_spacing = 20.0  # Adjust the maximum horizontal spacing as needed
-    treebuilder.plot_decision_tree(root, x_center=0.5, y=1.0, max_h_spacing=max_h_spacing)
+    plt.figure(figsize=(50, 8))
+    max_h_spacing = 35.0  # Adjust the maximum horizontal spacing as needed
+    treebuilder.plot_decision_tree(root, x_center=0, y=0, max_h_spacing=max_h_spacing)
 
     plt.axis('off')
     plt.show()
 
 def main():
-    run_experiments()
     plot_graph()
+    # run_experiments()
+    
     
 
 if __name__ == "__main__":
