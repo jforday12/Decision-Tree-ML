@@ -1,5 +1,5 @@
 
-#Code Description:
+# Code Description:
 Given a dataset with 7 wifi signal strengths and associated room the signals were read in. This decision tree will learn from the dataset and return with up to 97% accuracy the location of the room given an unseen signal strength. 
 
 The tree is then pruned to save on memory and time requirements. 
