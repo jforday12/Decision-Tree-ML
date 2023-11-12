@@ -1,3 +1,8 @@
+
+#Code Description:
+Given a dataset with 7 wifi signal strengths and associated room the signals were read in. This decision tree will learn from the dataset and return with up to 97% accuracy the location of the room given an unseen signal strength. 
+
+The tree is then pruned to save on memory and time requirements. 
 # Running the code:
 
 Running `main.py` will run the cross validation without and with pruning for both datasets and print all the results (confusion matrix, accuracy, recall, F1 etc..).
